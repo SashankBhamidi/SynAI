@@ -44,6 +44,14 @@ coverage/
 .cache/
 .eslintcache
 
-# Dev tools - NEVER commit
+# Editor and AI tools
+.cursor/
+.anthropic/
+.openai/
 .claude/
 .claude.*
+Claude.md
+
+# Temporary files
+*.tmp
+*.temp
