@@ -1,0 +1,309 @@
+
+import { useState, FormEvent, useRef, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { SendIcon, Mic, Square } from "lucide-react";
+import { toast } from "sonner";
+import { QuickActionsDropdown } from "./QuickActions";
+import { FileAttachmentComponent } from "./FileAttachment";
+import { AttachmentButton } from "./AttachmentButton";
+import { SmartAutoComplete } from "./SmartAutoComplete";
+import { FileAttachment } from "@/types";
+import { logger } from "@/utils/logger";
+
+interface ChatInputProps {
+  onSendMessage: (message: string, attachments?: FileAttachment[]) => void;
+  isLoading: boolean;
+  value?: string;
+  onChange?: (value: string) => void;
+}
+
+export function ChatInput({ onSendMessage, isLoading, value, onChange }: ChatInputProps) {
+  const [input, setInput] = useState("");
+  const [isRecording, setIsRecording] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+  const [attachments, setAttachments] = useState<FileAttachment[]>([]);
+  const [showAutoComplete, setShowAutoComplete] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  
+  // Use controlled or uncontrolled input based on whether value/onChange are provided
+  const isControlled = value !== undefined && onChange !== undefined;
+  const currentValue = isControlled ? value : input;
+  
+  // Voice recording functionality using Web Speech API
+  const startRecording = () => {
+    try {
+      // Check if Web Speech API is supported
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      
+      if (!SpeechRecognition) {
+        toast.error("Speech recognition not supported in this browser");
+        return;
+      }
+      
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
+      
+      recognition.onstart = () => {
+        setIsRecording(true);
+      };
+      
+      recognition.onresult = (event) => {
+        let finalTranscript = '';
+        let interimTranscript = '';
+        
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript;
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+        
+        const fullTranscript = finalTranscript || interimTranscript;
+        if (fullTranscript) {
+          if (isControlled && onChange) {
+            onChange(fullTranscript);
+          } else {
+            setInput(fullTranscript);
+          }
+        }
+      };
+      
+      recognition.onerror = (event) => {
+        logger.error('Speech recognition error:', event.error);
+        setIsRecording(false);
+        if (event.error !== 'aborted') {
+          toast.error("Speech recognition failed. Please try again.");
+        }
+      };
+      
+      recognition.onend = () => {
+        setIsRecording(false);
+        setMediaRecorder(null);
+      };
+      
+      recognition.start();
+      setMediaRecorder(recognition as unknown as MediaRecorder);
+    } catch (error) {
+      logger.error('Error starting speech recognition:', error);
+      toast.error("Could not start speech recognition");
+    }
+  };
+  
+  const stopRecording = () => {
+    if (mediaRecorder && isRecording) {
+      if (typeof mediaRecorder.stop === 'function') {
+        mediaRecorder.stop();
+      } else if (typeof mediaRecorder.abort === 'function') {
+        mediaRecorder.abort();
+      }
+      setIsRecording(false);
+      setMediaRecorder(null);
+    }
+  };
+  
+  const toggleRecording = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  };
+  
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    if (isControlled) {
+      onChange?.(newValue);
+    } else {
+      setInput(newValue);
+    }
+    
+    // Show/hide autocomplete based on input
+    setShowAutoComplete(newValue.length > 1 && !isLoading && !isRecording);
+    
+    // Auto-resize textarea
+    const textarea = e.target;
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
+  };
+
+  const handleAttachmentClick = () => {
+    // Trigger file selection from the FileAttachmentComponent
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
+    }
+  };
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    
+    if ((!currentValue.trim() && attachments.length === 0) || isLoading) return;
+    
+    onSendMessage(currentValue, attachments.length > 0 ? attachments : undefined);
+    
+    if (!isControlled) {
+      setInput("");
+    }
+    
+    // Clear attachments after sending
+    setAttachments([]);
+
+    // Refocus the textarea after a short delay to ensure the form submission is complete
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+      }
+    }, 100);
+  };
+
+  // Focus the textarea when the component mounts
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, []);
+
+  // Refocus when controlled value is cleared (indicating a message was sent)
+  useEffect(() => {
+    if (isControlled && value === "" && textareaRef.current) {
+      setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+        }
+      }, 100);
+    }
+  }, [value, isControlled]);
+
+  return (
+    <form onSubmit={handleSubmit} className="relative w-full">
+      <div className="chat-input-container p-4">
+        {/* File Attachments */}
+        <FileAttachmentComponent
+          attachments={attachments}
+          onAttachmentsChange={setAttachments}
+          disabled={isLoading || isRecording}
+          showButton={false}
+        />
+        
+        <div className="flex items-center gap-3 mt-3">
+          <Textarea
+          ref={textareaRef}
+          value={currentValue}
+          onChange={handleInputChange}
+          placeholder={isRecording ? "🎤 Recording... Click stop when finished" : "Message Synthesis AI..."}
+          className="resize-none bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 flex-1 min-h-[56px] max-h-[200px] overflow-y-auto custom-scrollbar transition-all duration-200 placeholder:text-muted-foreground/60 text-foreground"
+          disabled={isLoading || isRecording}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              if ((currentValue.trim() || attachments.length > 0) && !isRecording) {
+                handleSubmit(e);
+              }
+            }
+            // Hide autocomplete on escape
+            if (e.key === "Escape") {
+              setShowAutoComplete(false);
+            }
+          }}
+          onFocus={() => currentValue.length > 1 && setShowAutoComplete(true)}
+          onBlur={(e) => {
+            // Only hide if not clicking on autocomplete
+            setTimeout(() => {
+              if (!e.relatedTarget?.closest('.smart-autocomplete')) {
+                setShowAutoComplete(false);
+              }
+            }, 150);
+          }}
+        />
+        <div className="flex gap-2 flex-shrink-0">
+          <AttachmentButton
+            onClick={handleAttachmentClick}
+            disabled={isLoading || isRecording}
+            attachments={attachments}
+            isDragOver={false}
+          />
+          <QuickActionsDropdown 
+            onSelectAction={(prompt) => {
+              if (isControlled && onChange) {
+                onChange(prompt + " ");
+              } else {
+                setInput(prompt + " ");
+              }
+              // Focus the textarea after selecting an action
+              setTimeout(() => {
+                if (textareaRef.current) {
+                  textareaRef.current.focus();
+                  // Move cursor to end
+                  const len = textareaRef.current.value.length;
+                  textareaRef.current.setSelectionRange(len, len);
+                }
+              }, 100);
+            }}
+          />
+          <Button
+            type="button"
+            size="icon"
+            variant={isRecording ? "destructive" : "ghost"}
+            className={`rounded-full h-10 w-10 sm:h-10 sm:w-10 transition-all duration-200 ${
+              isRecording ? 'animate-pulse shadow-lg' : 'hover:bg-accent'
+            } touch-manipulation`}
+            onClick={toggleRecording}
+            disabled={isLoading}
+            title={isRecording ? "Stop recording" : "Start voice input"}
+          >
+            {isRecording ? (
+              <Square size={18} className="text-white" />
+            ) : (
+              <Mic size={18} className="text-muted-foreground hover:text-foreground" />
+            )}
+            <span className="sr-only">{isRecording ? "Stop recording" : "Voice input"}</span>
+          </Button>
+          <Button 
+            type="submit"
+            size="icon" 
+            className={`rounded-full h-10 w-10 sm:h-10 sm:w-10 transition-all duration-200 touch-manipulation ${
+              (currentValue.trim() || attachments.length > 0) && !isLoading && !isRecording 
+                ? 'bg-primary hover:bg-primary/90 shadow-lg scale-105' 
+                : ''
+            }`}
+            disabled={(!currentValue.trim() && attachments.length === 0) || isLoading || isRecording}
+          >
+            <SendIcon size={18} />
+            <span className="sr-only">Send message</span>
+          </Button>
+        </div>
+        </div>
+        
+        {/* Smart Auto-Complete */}
+        {showAutoComplete && (
+          <SmartAutoComplete
+            inputValue={currentValue}
+            onSuggestionSelect={(suggestion) => {
+              if (isControlled && onChange) {
+                onChange(suggestion);
+              } else {
+                setInput(suggestion);
+              }
+              setShowAutoComplete(false);
+              // Focus textarea after selection
+              setTimeout(() => {
+                if (textareaRef.current) {
+                  textareaRef.current.focus();
+                  const len = suggestion.length;
+                  textareaRef.current.setSelectionRange(len, len);
+                }
+              }, 50);
+            }}
+            onHide={() => setShowAutoComplete(false)}
+            className="smart-autocomplete bottom-full mb-2 left-0"
+          />
+        )}
+      </div>
+    </form>
+  );
+}

@@ -1,0 +1,72 @@
+name: Deploy
+
+# 🔒 DEPLOYMENT SAFETY: This workflow ONLY runs on master branch pushes
+# Pull Requests will NEVER trigger deployment
+on:
+  push:
+    branches: [master]  # Only master branch pushes trigger deployment
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    # Additional safety: Only run if not a draft or if specific conditions are met
+    # AND only if Vercel token is available (secrets configured)
+    if: github.ref == 'refs/heads/master' && !github.event.repository.draft && secrets.VERCEL_TOKEN != ''
+    
+    environment:
+      name: production
+      url: https://your-domain.com  # Update with your actual domain
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3.6.0
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3.8.1
+        with:
+          node-version: 20
+          cache: npm
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run tests before deployment
+        run: |
+          npm run typecheck
+          npm run lint:check
+          npm run test
+      
+      - name: Build for production
+        run: npm run build
+        env:
+          NODE_ENV: production
+      
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+      
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+      
+      - name: Build Project Artifacts
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+      
+      - name: Deploy Project Artifacts to Vercel
+        run: |
+          url=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          echo "🚀 Deployed to: $url"
+          echo "deployment-url=$url" >> $GITHUB_OUTPUT
+        id: deploy
+      
+      - name: Create deployment status
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: context.payload.deployment?.id || 0,
+              state: 'success',
+              environment_url: '${{ steps.deploy.outputs.deployment-url }}',
+              description: 'Deployment successful'
+            })
