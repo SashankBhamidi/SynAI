@@ -13,7 +13,7 @@ on:
       - 'docs/**'
 
 jobs:
-  # First run all quality checks
+  # Run our own quality gate to ensure everything passes before deployment
   quality-gate:
     name: Quality Gate
     runs-on: ubuntu-latest
@@ -44,12 +44,6 @@ jobs:
         run: npm run build
         env:
           NODE_ENV: production
-      
-      - name: Archive coverage reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: ./coverage/
 
   # Deploy only after quality gate passes
   deploy:
@@ -83,20 +77,35 @@ jobs:
         env:
           NODE_ENV: production
       
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'
-          working-directory: ./
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+      
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      
+      - name: Build Project Artifacts  
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      
+      - name: Deploy Project Artifacts to Vercel
+        run: |
+          url=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          echo "deployment-url=$url" >> $GITHUB_OUTPUT
+        id: deploy
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
       
       - name: Comment deployment URL
         uses: actions/github-script@v7
         with:
           script: |
-            const deploymentUrl = 'https://synai.site';
+            const deploymentUrl = '${{ steps.deploy.outputs.deployment-url }}' || 'https://synai.site';
             
             github.rest.repos.createCommitComment({
               owner: context.repo.owner,
@@ -105,4 +114,4 @@ jobs:
               body: `🚀 Successfully deployed to [${deploymentUrl}](${deploymentUrl})`
             });
             
-            core.info(`Deployed to: ${deploymentUrl}`);
+            console.log(`Deployed to: ${deploymentUrl}`);
