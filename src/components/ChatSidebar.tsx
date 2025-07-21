@@ -274,7 +274,7 @@ export function ChatSidebar() {
     try {
       exportConversations();
       toast.success("Conversations exported successfully");
-    } catch (error) {
+    } catch (_error) {
       logger.error('Export failed:', error);
       toast.error("Failed to export conversations");
     }
@@ -309,7 +309,7 @@ export function ChatSidebar() {
         // No conflicts, import directly
         await performImport(file, 'skip');
       }
-    } catch (error) {
+    } catch (_error) {
       logger.error('Import failed:', error);
       toast.error("Failed to import conversations. Please check the file format.");
     } finally {
@@ -334,7 +334,7 @@ export function ChatSidebar() {
       if (result.renamed > 0) messages.push(`${result.renamed} renamed`);
       
       toast.success(`Import completed: ${messages.join(', ')}`);
-    } catch (error) {
+    } catch (_error) {
       logger.error('Import failed:', error);
       toast.error("Failed to import conversations. Please check the file format.");
     }

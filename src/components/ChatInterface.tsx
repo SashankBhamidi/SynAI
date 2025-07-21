@@ -418,7 +418,7 @@ export function ChatInterface() {
       
       // Immediately save the conversation with new messages
       saveConversation(conversation, finalMessages);
-    } catch (error) {
+    } catch (_error) {
       logger.error('Error sending message to AI provider:', error);
       
       const errorMessage: Message = {
@@ -467,7 +467,7 @@ export function ChatInterface() {
       if (lastUserMessage && lastUserMessage.role === "user") {
         await handleSendMessageInternal(lastUserMessage.content, undefined, true, messagesWithoutLastAI, regenerationCount);
       }
-    } catch (error) {
+    } catch (_error) {
       logger.error('Error during regeneration:', error);
     } finally {
       setIsRegenerating(false);

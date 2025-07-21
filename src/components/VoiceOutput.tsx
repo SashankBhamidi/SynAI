@@ -73,7 +73,7 @@ export function VoiceOutput({ text, autoPlay = false, className }: VoiceOutputPr
       if (savedSettings) {
         try {
           setSettings(JSON.parse(savedSettings));
-        } catch (error) {
+        } catch (_error) {
           console.error('Failed to load voice settings:', error);
         }
       }
@@ -103,7 +103,7 @@ export function VoiceOutput({ text, autoPlay = false, className }: VoiceOutputPr
         if (speechSynthesis.speaking) {
           speechSynthesis.cancel();
         }
-      } catch (error) {
+      } catch (_error) {
         console.warn('Error during voice cleanup:', error);
       }
     };
@@ -145,7 +145,7 @@ export function VoiceOutput({ text, autoPlay = false, className }: VoiceOutputPr
       setTimeout(() => {
         startSpeech();
       }, 100);
-    } catch (error) {
+    } catch (_error) {
       console.warn('Error cancelling speech:', error);
       startSpeech();
     }
@@ -229,7 +229,7 @@ export function VoiceOutput({ text, autoPlay = false, className }: VoiceOutputPr
       
       try {
         speechSynthesis.speak(utterance);
-      } catch (error) {
+      } catch (_error) {
         console.error('Error starting speech:', error);
         toast.error("Failed to start speech");
         setIsPlaying(false);
@@ -247,7 +247,7 @@ export function VoiceOutput({ text, autoPlay = false, className }: VoiceOutputPr
         speechSynthesis.pause();
         setIsPaused(true);
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Error pausing speech:', error);
     }
   };
@@ -258,7 +258,7 @@ export function VoiceOutput({ text, autoPlay = false, className }: VoiceOutputPr
         speechSynthesis.resume();
         setIsPaused(false);
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Error resuming speech:', error);
       // If resume fails, try to restart
       handlePlay();
@@ -268,7 +268,7 @@ export function VoiceOutput({ text, autoPlay = false, className }: VoiceOutputPr
   const handleStop = () => {
     try {
       speechSynthesis.cancel();
-    } catch (error) {
+    } catch (_error) {
       console.error('Error stopping speech:', error);
     } finally {
       setIsPlaying(false);

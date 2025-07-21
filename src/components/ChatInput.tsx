@@ -88,7 +88,7 @@ export function ChatInput({ onSendMessage, isLoading, value, onChange }: ChatInp
       
       recognition.start();
       setMediaRecorder(recognition as unknown as MediaRecorder);
-    } catch (error) {
+    } catch (_error) {
       logger.error('Error starting speech recognition:', error);
       toast.error("Could not start speech recognition");
     }

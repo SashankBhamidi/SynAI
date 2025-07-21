@@ -1,5 +1,6 @@
 import { render, RenderOptions } from '@testing-library/react'
-import { ReactElement } from 'react'
+import React, { ReactElement } from 'react'
+import { vi } from 'vitest'
 import { ThemeProvider } from '@/providers/ThemeProvider'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
@@ -13,12 +14,10 @@ const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
     },
   })
 
-  return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="light" storageKey="test-theme">
-        {children}
-      </ThemeProvider>
-    </QueryClientProvider>
+  return React.createElement(QueryClientProvider, { client: queryClient },
+    React.createElement(ThemeProvider, { defaultTheme: "light", storageKey: "test-theme" },
+      children
+    )
   )
 }
 
@@ -52,7 +51,7 @@ export const mockApiKey = 'test-api-key-12345'
 export const waitForLoadingToFinish = () => 
   new Promise(resolve => setTimeout(resolve, 0))
 
-export const mockFetch = (response: any, ok = true) => {
+export const mockFetch = (response: unknown, ok = true) => {
   global.fetch = vi.fn().mockResolvedValue({
     ok,
     json: () => Promise.resolve(response),

@@ -62,7 +62,7 @@ export function SmartAutoComplete({
           lastUsed: new Date(s.lastUsed)
         }));
         setCustomSuggestions(parsed);
-      } catch (error) {
+      } catch (_error) {
         console.error('Failed to load suggestions:', error);
       }
     }
