@@ -96,7 +96,7 @@ export function ConversationBranching({
       setTimeout(() => {
         window.location.reload();
       }, 100);
-    } catch (_error) {
+    } catch (error) {
       logger.error('Failed to create branch:', error);
       toast.error(`Failed to create branch: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {

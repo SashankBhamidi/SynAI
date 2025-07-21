@@ -18,7 +18,8 @@ export function CopyButton({ text, className = "" }: CopyButtonProps) {
       setCopied(true);
       // Removed toast - visual feedback from icon change is sufficient
       setTimeout(() => setCopied(false), 2000);
-    } catch (_error) {
+    } catch (error) {
+      console.error("Copy failed:", error);
       toast.error("Failed to copy");
     }
   };

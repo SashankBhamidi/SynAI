@@ -89,7 +89,7 @@ export function GlobalConversationSearch() {
 
         searchResults.sort((a, b) => b.relevanceScore - a.relevanceScore);
         setResults(searchResults.slice(0, 50));
-      } catch (_error) {
+      } catch (error) {
         console.error('Search error:', error);
         toast.error("Search failed");
       } finally {

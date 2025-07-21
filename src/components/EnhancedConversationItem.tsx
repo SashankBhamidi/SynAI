@@ -48,10 +48,6 @@ export function EnhancedConversationItem({
     }
   }, [isEditing]);
 
-  const handleEdit = () => {
-    setEditTitle(conversation.title);
-    setIsEditing(true);
-  };
 
   const handleSave = () => {
     const newTitle = editTitle.trim();

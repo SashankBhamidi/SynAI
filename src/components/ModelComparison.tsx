@@ -225,7 +225,7 @@ export function ModelComparison() {
           responseTime,
           tokenCount: response?.length || 0
         };
-      } catch (_error) {
+      } catch (error) {
         const endTime = Date.now();
         const responseTime = endTime - startTime;
         
@@ -242,7 +242,7 @@ export function ModelComparison() {
       const results = await Promise.all(promises);
       setResponses(results);
       calculateMetrics(results);
-    } catch (_error) {
+    } catch (error) {
       toast.error("Error running comparison");
     } finally {
       setIsRunning(false);

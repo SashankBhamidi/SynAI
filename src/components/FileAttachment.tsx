@@ -137,7 +137,7 @@ export function FileAttachmentComponent({
           }
         });
       }
-    } catch (_error) {
+    } catch (error) {
       console.error('Error processing file:', error);
       toast.error(`Failed to process file: ${file.name}`);
       return null;
@@ -170,7 +170,7 @@ export function FileAttachmentComponent({
         onAttachmentsChange([...attachments, ...newAttachments]);
         toast.success(`Added ${newAttachments.length} file${newAttachments.length > 1 ? 's' : ''}`);
       }
-    } catch (_error) {
+    } catch (error) {
       console.error('Error processing files:', error);
       toast.error('Failed to process files');
     } finally {

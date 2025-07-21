@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Copy, Edit2, Trash2 } from "lucide-react";
+import { RefreshCw, Edit2, Trash2 } from "lucide-react";
 import { CopyButton } from "./CopyButton";
 import { VoiceOutput } from "./VoiceOutput";
 import { ConversationBranching } from "./ConversationBranching";

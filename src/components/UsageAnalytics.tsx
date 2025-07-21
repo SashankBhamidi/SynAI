@@ -94,7 +94,7 @@ export function UsageAnalytics() {
     try {
       exportUsageAnalytics();
       toast.success('Analytics data exported successfully');
-    } catch (_error) {
+    } catch (error) {
       console.error('Export failed:', error);
       toast.error('Failed to export analytics data');
     }
@@ -105,7 +105,7 @@ export function UsageAnalytics() {
       clearUsageAnalytics();
       setStats(calculateUsageStats());
       toast.success('Analytics data cleared');
-    } catch (_error) {
+    } catch (error) {
       console.error('Clear failed:', error);
       toast.error('Failed to clear analytics data');
     }

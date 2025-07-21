@@ -87,7 +87,7 @@ export function ThemeCustomizer() {
         const parsed = JSON.parse(savedSettings);
         setSettings(parsed);
         applyThemeSettings(parsed);
-      } catch (_error) {
+      } catch (error) {
         console.error('Error loading theme settings:', error);
       }
     }

@@ -105,7 +105,7 @@ function ApiKeyInput({ provider, label, placeholder }: ApiKeyInputProps) {
           toast.error(`${provider} API key not saved`);
         }
       }
-    } catch (_error) {
+    } catch (error) {
       console.error(`Validation error for ${provider}:`, error);
       // Allow saving even when validation throws an error
       if (window.confirm(`Could not verify ${provider} API key. Save anyway?`)) {

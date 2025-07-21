@@ -18,7 +18,6 @@ import {
 import { 
   Keyboard, 
   MessageSquare, 
-  Search, 
   Settings, 
   Navigation,
   Zap,
