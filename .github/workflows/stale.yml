@@ -1,0 +1,75 @@
+name: Stale Issues & PRs
+
+on:
+  schedule:
+    # Run every day at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  stale:
+    name: Mark Stale Issues & PRs
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Mark stale issues and pull requests
+      uses: actions/stale@v9
+      with:
+        stale-issue-message: |
+          This issue has been automatically marked as stale because it has not had recent activity. 
+          
+          **What happens next?**
+          - If this issue is still relevant, please comment to keep it open
+          - If no activity occurs within 7 days, this issue will be automatically closed
+          - You can always reopen a closed issue if needed
+          
+          Thank you for your contributions! 🚀
+        
+        stale-pr-message: |
+          This pull request has been automatically marked as stale because it has not had recent activity.
+          
+          **What happens next?**
+          - If this PR is still relevant, please comment or push new commits
+          - If no activity occurs within 7 days, this PR will be automatically closed
+          - You can always reopen a closed PR if needed
+          
+          Thank you for your contributions! 🚀
+        
+        close-issue-message: |
+          This issue was automatically closed because it has been stale for 7 days with no activity.
+          
+          **Don't worry!** This is just housekeeping - you can always:
+          - Reopen this issue if it's still relevant
+          - Create a new issue if you have additional context
+          - Reference this issue in future discussions
+          
+          Thank you for helping improve SynAI! 🙏
+        
+        close-pr-message: |
+          This pull request was automatically closed because it has been stale for 7 days with no activity.
+          
+          **Don't worry!** This is just housekeeping - you can always:
+          - Reopen this PR if it's still relevant
+          - Create a new PR with updated changes
+          - Reference this PR in future discussions
+          
+          Thank you for your contributions to SynAI! 🙏
+        
+        days-before-stale: 14
+        days-before-close: 7
+        stale-issue-label: 'stale'
+        stale-pr-label: 'stale'
+        close-issue-label: 'auto-closed'
+        close-pr-label: 'auto-closed'
+        exempt-issue-labels: 'bug,enhancement,help wanted,good first issue,priority: high'
+        exempt-pr-labels: 'bug,enhancement,priority: high,work-in-progress'
+        
+        # Don't mark issues/PRs stale if they have these labels
+        exempt-all-issue-assignees: true
+        exempt-all-pr-assignees: true
+        
+        # Ascending order means oldest issues are processed first
+        ascending: true
+        
+        # Process a maximum of 30 operations per run to avoid API limits
+        operations-per-run: 30

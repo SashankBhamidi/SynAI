@@ -1,4 +1,4 @@
-name: Security
+name: Security Audit
 
 on:
   push:
@@ -6,15 +6,19 @@ on:
   pull_request:
     branches: [ master ]
   schedule:
+    # Run security audit every Monday at 6 AM UTC
     - cron: '0 6 * * 1'
 
 jobs:
-  security-audit:
+  security-scan:
+    name: Security Vulnerability Scan
     runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
     
-    - name: Use Node.js
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '20'
@@ -23,9 +27,27 @@ jobs:
     - name: Install dependencies
       run: npm ci
     
-    - name: Security audit for production dependencies
-      run: npm audit --omit=dev --audit-level moderate
+    - name: Production security audit
+      run: |
+        echo "🔍 Scanning production dependencies for vulnerabilities..."
+        npm audit --omit=dev --audit-level moderate
       
-    - name: Security audit report (dev dependencies - informational)
-      run: npm audit --audit-level moderate || echo "Development dependency vulnerabilities detected but not blocking build"
+    - name: Development security audit (informational)
+      run: |
+        echo "ℹ️  Scanning development dependencies (informational only)..."
+        npm audit --audit-level moderate || echo "⚠️  Development dependency vulnerabilities detected (non-blocking)"
       continue-on-error: true
+
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Dependency Review
+      uses: actions/dependency-review-action@v4
+      with:
+        fail-on-severity: moderate

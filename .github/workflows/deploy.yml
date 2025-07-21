@@ -1,0 +1,71 @@
+name: Deploy to Vercel
+
+on:
+  push:
+    branches: [ master ]
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types:
+      - completed
+    branches: [ master ]
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    # Only run if CI Pipeline completed successfully
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'push' }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run final quality checks
+      run: |
+        npm run typecheck
+        npm run lint:check
+        npm test
+    
+    - name: Build for production
+      run: npm run build
+    
+    - name: Install Vercel CLI
+      run: npm install --global vercel@latest
+    
+    - name: Pull Vercel environment information
+      run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+    
+    - name: Build project artifacts
+      run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+    
+    - name: Deploy to Vercel
+      id: deploy
+      run: |
+        DEPLOYMENT_URL=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+        echo "deployment-url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+        echo "✅ Deployed to: $DEPLOYMENT_URL"
+    
+    - name: Update deployment status
+      if: success()
+      run: |
+        echo "🚀 Production deployment successful!"
+        echo "📍 Live at: ${{ steps.deploy.outputs.deployment-url }}"
+    
+    - name: Notify deployment failure
+      if: failure()
+      run: |
+        echo "❌ Production deployment failed!"
+        echo "Please check the logs above for details."

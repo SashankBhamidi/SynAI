@@ -1,4 +1,4 @@
-name: CI
+name: CI Pipeline
 
 on:
   push:
@@ -6,17 +6,22 @@ on:
   pull_request:
     branches: [ master ]
 
+env:
+  NODE_VERSION: '20'
+
 jobs:
-  test:
+  quality-checks:
+    name: Code Quality & Tests
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [18, 20]
-
-    steps:
-    - uses: actions/checkout@v4
     
-    - name: Use Node.js ${{ matrix.node-version }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
@@ -25,31 +30,41 @@ jobs:
     - name: Install dependencies
       run: npm ci
     
-    - name: Type check
+    - name: TypeScript type checking
       run: npm run typecheck
     
-    - name: Lint
+    - name: ESLint code quality check
       run: npm run lint:check
     
-    - name: Run tests
+    - name: Run test suite
       run: npm test
     
-    - name: Build
+    - name: Build application
       run: npm run build
-
-  security:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
     
-    - name: Use Node.js
+    - name: Check bundle size
+      if: matrix.node-version == '20'
+      run: |
+        echo "📦 Bundle size analysis:"
+        du -sh dist/
+        ls -la dist/assets/ || echo "No assets directory found"
+
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
     
     - name: Install dependencies
       run: npm ci
     
-    - name: Run security audit for production dependencies
+    - name: Audit production dependencies
       run: npm audit --omit=dev --audit-level moderate

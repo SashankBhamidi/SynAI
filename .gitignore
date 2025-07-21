@@ -56,6 +56,7 @@ Claude.md
 *.tmp
 *.temp
 
-# Generated HTML reports
+# Generated reports
 html/
 .html/
+coverage/

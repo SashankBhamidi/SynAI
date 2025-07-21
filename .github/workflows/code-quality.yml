@@ -1,0 +1,129 @@
+name: Code Quality
+
+on:
+  pull_request:
+    branches: [ master ]
+  push:
+    branches: [ master ]
+
+jobs:
+  code-quality:
+    name: Code Quality Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Generate test coverage report
+      run: npm run test:coverage
+    
+    - name: Check test coverage thresholds
+      run: |
+        echo "📊 Test Coverage Analysis:"
+        if [ -f coverage/coverage-summary.json ]; then
+          node -e "
+            const coverage = require('./coverage/coverage-summary.json');
+            const { lines, statements, functions, branches } = coverage.total;
+            console.log('Lines:', lines.pct + '%');
+            console.log('Statements:', statements.pct + '%'); 
+            console.log('Functions:', functions.pct + '%');
+            console.log('Branches:', branches.pct + '%');
+            
+            // Warn if coverage is below thresholds
+            if (lines.pct < 80) console.log('⚠️  Line coverage below 80%');
+            if (statements.pct < 80) console.log('⚠️  Statement coverage below 80%');
+            if (functions.pct < 70) console.log('⚠️  Function coverage below 70%');
+            if (branches.pct < 70) console.log('⚠️  Branch coverage below 70%');
+          "
+        else
+          echo "⚠️  Coverage report not found"
+        fi
+    
+    - name: Analyze bundle size
+      run: |
+        npm run build
+        echo "📦 Bundle Analysis:"
+        du -sh dist/
+        
+        # Check if bundle size is reasonable
+        BUNDLE_SIZE=$(du -sm dist/ | cut -f1)
+        echo "Bundle size: ${BUNDLE_SIZE}MB"
+        
+        if [ "$BUNDLE_SIZE" -gt 10 ]; then
+          echo "⚠️  Bundle size is large (${BUNDLE_SIZE}MB). Consider code splitting."
+        else
+          echo "✅ Bundle size is reasonable (${BUNDLE_SIZE}MB)"
+        fi
+    
+    - name: Check for TODO/FIXME comments
+      run: |
+        echo "🔍 Scanning for TODO/FIXME comments:"
+        TODO_COUNT=$(grep -r -E "(TODO|FIXME|XXX|HACK)" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" | wc -l)
+        
+        if [ "$TODO_COUNT" -gt 0 ]; then
+          echo "Found $TODO_COUNT TODO/FIXME comments:"
+          grep -r -E "(TODO|FIXME|XXX|HACK)" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" || true
+          echo "⚠️  Consider addressing these before release"
+        else
+          echo "✅ No TODO/FIXME comments found"
+        fi
+    
+    - name: Check for console.log statements
+      run: |
+        echo "🔍 Scanning for console.log statements:"
+        CONSOLE_COUNT=$(grep -r "console\." src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" | grep -v "console.warn\|console.error" | wc -l)
+        
+        if [ "$CONSOLE_COUNT" -gt 0 ]; then
+          echo "Found $CONSOLE_COUNT console.log statements:"
+          grep -r "console\." src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" | grep -v "console.warn\|console.error" || true
+          echo "⚠️  Consider using the logger utility instead"
+        else
+          echo "✅ No problematic console statements found"
+        fi
+
+  performance:
+    name: Performance Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build and analyze
+      run: |
+        npm run build
+        
+        echo "📈 Performance Analysis:"
+        echo "Build time: $(date)"
+        
+        # Check for large assets
+        echo "🔍 Large assets check:"
+        find dist/ -name "*.js" -size +500k -exec ls -lh {} \; | while read -r line; do
+          echo "⚠️  Large JavaScript file: $line"
+        done
+        
+        find dist/ -name "*.css" -size +100k -exec ls -lh {} \; | while read -r line; do
+          echo "⚠️  Large CSS file: $line"
+        done

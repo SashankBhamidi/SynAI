@@ -1,28 +1,82 @@
-name: Auto Assign Issues
+name: Issue Management
 
 on:
   issues:
-    types: [opened]
+    types: [opened, reopened]
+  pull_request:
+    types: [opened, reopened]
 
 jobs:
-  auto-assign:
+  auto-assign-issues:
+    name: Auto-assign Issues
     runs-on: ubuntu-latest
+    if: github.event_name == 'issues'
+    
     steps:
-    - name: Auto-assign maintainer
+    - name: Auto-assign maintainer to new issues
       uses: actions/github-script@v7
       with:
         script: |
-          github.rest.issues.addAssignees({
+          // Auto-assign maintainer
+          await github.rest.issues.addAssignees({
             owner: context.repo.owner,
             repo: context.repo.repo,
             issue_number: context.issue.number,
             assignees: ['SashankBhamidi']
           });
           
-          // Add triage label
-          github.rest.issues.addLabels({
+          // Add triage label to new issues
+          await github.rest.issues.addLabels({
             owner: context.repo.owner,
             repo: context.repo.repo,
             issue_number: context.issue.number,
             labels: ['triage']
           });
+          
+          console.log('✅ Auto-assigned maintainer and added triage label');
+
+  label-pull-requests:
+    name: Label Pull Requests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: Add PR labels based on changes
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const pr = context.payload.pull_request;
+          const labels = [];
+          
+          // Auto-label based on PR title patterns
+          const title = pr.title.toLowerCase();
+          
+          if (title.includes('fix') || title.includes('bug')) {
+            labels.push('bug');
+          }
+          if (title.includes('feat') || title.includes('feature')) {
+            labels.push('enhancement');
+          }
+          if (title.includes('doc') || title.includes('readme')) {
+            labels.push('documentation');
+          }
+          if (title.includes('test')) {
+            labels.push('tests');
+          }
+          if (title.includes('refactor') || title.includes('cleanup')) {
+            labels.push('refactor');
+          }
+          
+          // Add review-needed label to all new PRs
+          labels.push('review-needed');
+          
+          if (labels.length > 0) {
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              labels: labels
+            });
+            
+            console.log(`✅ Added labels: ${labels.join(', ')}`);
+          }
