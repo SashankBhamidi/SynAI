@@ -1,0 +1,122 @@
+name: Dependabot Auto-management
+
+on:
+  pull_request_target:
+    types: [labeled, unlabeled, synchronize, opened, edited, ready_for_review, reopened]
+
+permissions:
+  pull-requests: write
+  contents: write
+  checks: read
+
+jobs:
+  dependabot:
+    name: Auto-manage Dependabot PRs
+    runs-on: ubuntu-latest
+    if: ${{ github.actor == 'dependabot[bot]' }}
+    
+    steps:
+    - name: Dependabot metadata
+      id: metadata
+      uses: dependabot/fetch-metadata@v2
+      with:
+        github-token: "${{ secrets.GITHUB_TOKEN }}"
+    
+    - name: Auto-approve patch updates
+      if: ${{ steps.metadata.outputs.update-type == 'version-update:semver-patch' }}
+      run: |
+        gh pr review --approve "$PR_URL" --body "✅ Auto-approved patch-level dependency update"
+        echo "Auto-approved patch update: ${{ steps.metadata.outputs.dependency-names }}"
+      env:
+        PR_URL: ${{ github.event.pull_request.html_url }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Auto-approve minor security updates
+      if: |
+        steps.metadata.outputs.update-type == 'version-update:semver-minor' &&
+        contains(steps.metadata.outputs.dependency-names, 'security')
+      run: |
+        gh pr review --approve "$PR_URL" --body "🔒 Auto-approved security-related minor update"
+        echo "Auto-approved security update: ${{ steps.metadata.outputs.dependency-names }}"
+      env:
+        PR_URL: ${{ github.event.pull_request.html_url }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Comment on major updates
+      if: ${{ steps.metadata.outputs.update-type == 'version-update:semver-major' }}
+      run: |
+        gh pr comment "$PR_URL" --body "⚠️ **Major Version Update Detected**
+        
+        This PR updates **${{ steps.metadata.outputs.dependency-names }}** with breaking changes.
+        
+        **Action Required:**
+        - Review changelog for breaking changes
+        - Test thoroughly before merging
+        - Consider the impact on existing functionality
+        
+        **Manual review and approval required.** 🔍"
+      env:
+        PR_URL: ${{ github.event.pull_request.html_url }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Label PRs by update type
+      run: |
+        case "${{ steps.metadata.outputs.update-type }}" in
+          "version-update:semver-patch")
+            gh pr edit "$PR_URL" --add-label "auto-merge-candidate"
+            ;;
+          "version-update:semver-minor")
+            gh pr edit "$PR_URL" --add-label "minor-update"
+            ;;
+          "version-update:semver-major")
+            gh pr edit "$PR_URL" --add-label "major-update,requires-manual-review"
+            ;;
+        esac
+      env:
+        PR_URL: ${{ github.event.pull_request.html_url }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  auto-merge-patches:
+    name: Auto-merge Safe Updates
+    runs-on: ubuntu-latest
+    needs: dependabot
+    if: |
+      github.actor == 'dependabot[bot]' &&
+      contains(github.event.pull_request.labels.*.name, 'auto-merge-candidate')
+    
+    steps:
+    - name: Wait for CI checks
+      uses: fountainhead/action-wait-for-check@v1.2.0
+      id: wait-for-ci
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        checkName: "CI Pipeline / Code Quality & Tests (20)"
+        ref: ${{ github.event.pull_request.head.sha }}
+        timeoutSeconds: 600
+        intervalSeconds: 10
+    
+    - name: Auto-merge if CI passes
+      if: steps.wait-for-ci.outputs.conclusion == 'success'
+      run: |
+        gh pr merge "$PR_URL" --auto --squash --subject "Auto-merge dependabot update"
+        echo "✅ Auto-merged patch-level dependency update"
+      env:
+        PR_URL: ${{ github.event.pull_request.html_url }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Comment if CI fails
+      if: steps.wait-for-ci.outputs.conclusion == 'failure'
+      run: |
+        gh pr comment "$PR_URL" --body "❌ **Auto-merge blocked**
+        
+        CI checks failed for this dependency update. This requires manual investigation.
+        
+        **Action Required:**
+        - Check the failing CI logs
+        - Investigate any compatibility issues
+        - Manual review and fix needed
+        
+        The auto-merge has been cancelled for safety. 🚫"
+      env:
+        PR_URL: ${{ github.event.pull_request.html_url }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
