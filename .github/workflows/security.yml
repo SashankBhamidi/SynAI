@@ -27,4 +27,4 @@ jobs:
       run: npm audit --audit-level moderate
       
     - name: Check for known vulnerabilities
-      run: npx audit-ci --moderate
+      run: npm audit --audit-level moderate

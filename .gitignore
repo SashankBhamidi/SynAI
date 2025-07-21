@@ -55,4 +55,7 @@ Claude.md
 # Temporary files
 *.tmp
 *.temp
+
+# Generated HTML reports
+html/
 .html/
