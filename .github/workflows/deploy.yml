@@ -9,8 +9,17 @@ on:
     branches: [master]
     paths-ignore:
       - '**.md'
-      - '.github/**'
       - 'docs/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/FUNDING.yml'
+      - '.github/SECURITY.md'
+      - '.github/CONTRIBUTORS.md'
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for manual deployment'
+        required: false
+        default: 'Manual deployment'
 
 jobs:
   # Run our own quality gate to ensure everything passes before deployment
