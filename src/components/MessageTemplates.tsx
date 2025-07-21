@@ -156,7 +156,7 @@ export function MessageTemplates({ onSelectTemplate }: MessageTemplatesProps) {
       const templatesToSave = updatedTemplates.length > 0 ? updatedTemplates : DEFAULT_TEMPLATES;
       setTemplates(templatesToSave);
       localStorage.setItem('message-templates', JSON.stringify(templatesToSave));
-      console.log('Templates saved:', templatesToSave.length);
+      // Templates saved successfully
     } catch (error) {
       console.error('Failed to save templates:', error);
       toast.error('Failed to save templates');
@@ -233,7 +233,7 @@ export function MessageTemplates({ onSelectTemplate }: MessageTemplatesProps) {
       }
       
       toast.success(`Template "${templateToDelete.title}" deleted permanently`);
-      console.log('Template deleted successfully:', templateId);
+      // Template deleted successfully
     } catch (error) {
       console.error('Failed to delete template:', error);
       toast.error('Failed to delete template completely');

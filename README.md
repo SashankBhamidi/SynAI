@@ -11,11 +11,12 @@ Multi-provider AI chat interface supporting OpenAI, Anthropic Claude, and Perple
 ## Features
 
 - **Multi-Provider Support**: OpenAI GPT, Anthropic Claude, Perplexity AI
-- **File Uploads**: Images, PDFs, text files with content extraction
+- **File Uploads**: Images, PDFs, text files with content extraction  
 - **Conversation Management**: Persistent chat history, search, branching
 - **Responsive Design**: Mobile and desktop optimized
 - **Theme Support**: Dark/light modes with customization
 - **Local Storage**: API keys and conversations stored locally
+- **Privacy-First**: No data sent to external servers, everything runs client-side
 
 ## Quick Start
 
@@ -67,14 +68,22 @@ Keys are stored locally and never transmitted externally.
 
 ## Contributing
 
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+
+### Quick Contribution Steps
+
 1. Fork the repository
-2. Create a feature branch
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
 3. Make your changes
-4. Run tests and linting
+4. Run tests: `npm test && npm run typecheck && npm run lint`
 5. Submit a pull request
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+## Community
+
+- 🐛 [Report Bugs](https://github.com/SashankBhamidi/SynAI/issues/new?template=bug_report.md)
+- 💡 [Request Features](https://github.com/SashankBhamidi/SynAI/issues/new?template=feature_request.md)
+- 💬 [Discussions](https://github.com/SashankBhamidi/SynAI/discussions)
 
 ## License
 
-MIT © [Sashank Bhamidi](https://github.com/SashankBhamidi)
+MIT © [Sashank Bhamidi](https://github.com/SashankBhamidi) - see [LICENSE](LICENSE) for details.
