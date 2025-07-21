@@ -8,7 +8,7 @@
 [![Security](https://github.com/SashankBhamidi/SynAI/workflows/Security/badge.svg)](https://github.com/SashankBhamidi/SynAI/actions)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB)](https://reactjs.org/)
-[![MIT License](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](https://choosealicense.com/licenses/mit/)
+[![CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 [**Live Demo**](https://synai.site) • [**Documentation**](docs/) • [**Contributing**](CONTRIBUTING.md) • [**Issues**](https://github.com/SashankBhamidi/SynAI/issues)
 
@@ -242,7 +242,24 @@ Security is a top priority for SynAI:
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License**.
+
+### What this means:
+
+✅ **You CAN:**
+- Use for personal projects and learning
+- Modify and adapt the code
+- Share your modifications (under same license)
+- Use for educational and research purposes
+
+❌ **You CANNOT:**
+- Use for commercial purposes or profit
+- Host competing commercial services
+- Sell or monetize the software
+
+🌐 **Official commercial hosting** is exclusively provided at [synai.site](https://synai.site) as a free service.
+
+See the [LICENSE](LICENSE) file for complete terms.
 
 ---
 

@@ -19,6 +19,17 @@ First off, thank you for considering contributing to SynAI! It's people like you
 
 This project and everyone participating in it is governed by the [SynAI Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
 
+## License Agreement
+
+SynAI is licensed under the **CC BY-NC-SA 4.0** (Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International) license. By contributing to this project, you agree that your contributions will be licensed under the same terms. This means:
+
+- ✅ **Personal and educational use** is encouraged
+- ❌ **Commercial use** is restricted (except official hosting at synai.site)
+- 🔄 **Derivative works** must use the same license
+- 📝 **Attribution** is required
+
+Please ensure your contributions align with these license terms.
+
 ## Getting Started
 
 ### Prerequisites
