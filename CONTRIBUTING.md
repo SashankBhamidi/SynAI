@@ -1,119 +1,318 @@
 # Contributing to SynAI
 
-Thanks for your interest in contributing! This guide will help you get started.
+First off, thank you for considering contributing to SynAI! It's people like you that make SynAI such a great tool for the AI community.
 
-## Development Setup
+## Table of Contents
 
-1. **Fork and clone**
+- [Code of Conduct](#code-of-conduct)
+- [Getting Started](#getting-started)
+- [Development Setup](#development-setup)
+- [How to Contribute](#how-to-contribute)
+- [Pull Request Process](#pull-request-process)
+- [Style Guidelines](#style-guidelines)
+- [Testing Guidelines](#testing-guidelines)
+- [Commit Message Guidelines](#commit-message-guidelines)
+- [Issue Labels](#issue-labels)
+- [Community](#community)
+
+## Code of Conduct
+
+This project and everyone participating in it is governed by the [SynAI Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (v18 or higher)
+- npm (v9 or higher)
+- Git
+
+### Development Setup
+
+1. **Fork the repository**
    ```bash
-   git clone https://github.com/your-username/SynAI.git
+   # Click the "Fork" button on GitHub
+   ```
+
+2. **Clone your fork**
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/SynAI.git
    cd SynAI
+   ```
+
+3. **Add upstream remote**
+   ```bash
+   git remote add upstream https://github.com/SashankBhamidi/SynAI.git
+   ```
+
+4. **Install dependencies**
+   ```bash
    npm install
    ```
 
-2. **Start development**
+5. **Start development server**
    ```bash
    npm run dev
    ```
 
-3. **Run tests**
+6. **Run tests**
    ```bash
    npm test
-   npm run typecheck
-   npm run lint
    ```
 
-## Code Standards
+## How to Contribute
 
-### TypeScript
-- Strict mode enabled - no `any` types
-- Proper interfaces for all props and data structures
-- JSDoc comments for exported functions
+### Reporting Bugs
 
-### React
-- Functional components with hooks
-- Custom hooks for reusable logic
-- Proper dependency arrays in `useEffect`
+Before creating bug reports, please check the existing issues to avoid duplicates. When you create a bug report, please use the bug report template and include as many details as possible.
 
-### Testing
-- Write tests for new features
-- Test edge cases and error scenarios
-- Maintain good test coverage
+### Suggesting Enhancements
 
-### Code Style
-- ESLint configuration enforced
-- No `console.log` statements (use `logger` utility)
-- Meaningful variable and function names
+Enhancement suggestions are tracked as GitHub issues. Use the feature request template and provide:
 
-## Pull Request Process
+- **Clear title and description**
+- **Explain why this enhancement would be useful**
+- **Provide examples or mockups if applicable**
 
-1. **Create a branch**
+### Contributing Code
+
+1. **Find an issue to work on**
+   - Look for issues labeled `good first issue` for beginners
+   - Check issues labeled `help wanted` for contributions needed
+   - Comment on the issue to let others know you're working on it
+
+2. **Create a branch**
    ```bash
    git checkout -b feature/your-feature-name
+   # or
+   git checkout -b fix/your-fix-name
    ```
 
-2. **Make your changes**
-   - Follow existing code patterns
+3. **Make your changes**
+   - Follow the style guidelines
    - Add tests for new functionality
-   - Update documentation if needed
+   - Update documentation as needed
 
-3. **Test your changes**
+4. **Test your changes**
    ```bash
-   npm test
    npm run typecheck
-   npm run lint
+   npm run lint:check
+   npm test
    npm run build
    ```
 
-4. **Submit PR**
+5. **Commit your changes**
+   ```bash
+   git commit -m "feat: add new feature description"
+   ```
+
+6. **Push to your fork**
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+
+7. **Create a Pull Request**
    - Use the PR template
-   - Link any related issues
-   - Request review
+   - Link to related issues
+   - Add screenshots for UI changes
 
-## Project Structure
+## Pull Request Process
+
+1. **Ensure your PR passes all checks**
+   - All tests pass
+   - Linting passes
+   - TypeScript compilation succeeds
+   - Build completes successfully
+
+2. **Update documentation**
+   - Update README if needed
+   - Add/update JSDoc comments
+   - Update relevant documentation
+
+3. **Follow the PR template**
+   - Fill out all relevant sections
+   - Link to related issues
+   - Describe changes made
+
+4. **Be responsive to feedback**
+   - Address review comments promptly
+   - Push additional commits as needed
+   - Keep the conversation professional
+
+## Style Guidelines
+
+### Code Style
+
+- **TypeScript**: Use TypeScript for all new code
+- **ESLint**: Follow the project's ESLint configuration
+- **Prettier**: Code formatting is handled automatically
+- **Naming**: Use descriptive names for variables, functions, and components
+
+### Component Guidelines
+
+- Use functional components with hooks
+- Keep components small and focused
+- Extract custom hooks for reusable logic
+- Use proper TypeScript types
+
+### File Organization
 
 ```
-SynAI/
-├── src/
-│   ├── components/          # UI components
-│   ├── services/           # API services
-│   ├── utils/              # Utilities
-│   ├── types/              # Type definitions
-│   └── test/               # Test setup
-├── docs/                   # Documentation
-└── .github/                # GitHub workflows
+src/
+├── components/          # React components
+│   ├── ui/             # Reusable UI components
+│   └── ...             # Feature-specific components
+├── hooks/              # Custom React hooks
+├── services/           # API and external service integrations
+├── utils/              # Utility functions
+├── types/              # TypeScript type definitions
+└── ...
 ```
 
-## Adding Features
+## Testing Guidelines
 
-### New AI Provider
-1. Create service in `src/services/providers/`
-2. Update provider factory
-3. Add model definitions
-4. Update API key storage
-5. Add tests
+### Test Requirements
 
-### New Component
-1. Create component file
-2. Add proper TypeScript interfaces
-3. Include JSDoc comments
-4. Add tests
-5. Export from appropriate index
+- Write tests for all new features
+- Maintain or improve test coverage
+- Test both happy path and error cases
+- Include integration tests for complex features
 
-## Reporting Issues
+### Test Types
 
-Use GitHub Issues with:
-- Clear bug description
-- Steps to reproduce
-- Environment details
-- Console errors (if any)
+```bash
+npm test              # Run all tests
+npm run test:watch    # Run tests in watch mode
+npm run test:coverage # Run tests with coverage report
+```
 
-## Questions?
+### Test Structure
 
-- Check existing issues and discussions
-- Review documentation in `docs/`
-- Ask in pull request comments
+```typescript
+describe('ComponentName', () => {
+  it('should handle expected behavior', () => {
+    // Arrange
+    // Act
+    // Assert
+  });
+  
+  it('should handle edge cases', () => {
+    // Test edge cases and error scenarios
+  });
+});
+```
+
+## Commit Message Guidelines
+
+We follow the [Conventional Commits](https://conventionalcommits.org/) specification:
+
+```
+<type>(<scope>): <description>
+
+[optional body]
+
+[optional footer]
+```
+
+### Types
+
+- `feat`: A new feature
+- `fix`: A bug fix
+- `docs`: Documentation only changes
+- `style`: Changes that do not affect the meaning of the code
+- `refactor`: A code change that neither fixes a bug nor adds a feature
+- `perf`: A code change that improves performance
+- `test`: Adding missing tests or correcting existing tests
+- `chore`: Changes to the build process or auxiliary tools
+
+### Examples
+
+```
+feat(chat): add message templates functionality
+fix(ui): resolve button alignment issue on mobile
+docs: update API integration guide
+test(utils): add tests for conversation storage
+```
+
+## Issue Labels
+
+- `bug`: Something isn't working
+- `enhancement`: New feature or request
+- `documentation`: Improvements or additions to documentation
+- `good first issue`: Good for newcomers
+- `help wanted`: Extra attention is needed
+- `priority: high`: High priority issue
+- `priority: medium`: Medium priority issue
+- `priority: low`: Low priority issue
+
+## AI Provider Integration
+
+When adding new AI provider integrations:
+
+1. **Follow the existing pattern**
+   - Extend `BaseProviderService`
+   - Implement required methods
+   - Add proper error handling
+
+2. **Add configuration**
+   - Update `src/data/models.ts`
+   - Add provider-specific settings
+   - Include proper TypeScript types
+
+3. **Testing**
+   - Add unit tests for the service
+   - Test error scenarios
+   - Add integration tests if possible
+
+## Community
+
+### Getting Help
+
+- **Documentation**: Check the [docs](docs/) folder
+- **Discussions**: Use [GitHub Discussions](https://github.com/SashankBhamidi/SynAI/discussions)
+- **Issues**: Search existing issues before creating new ones
+
+### Communication
+
+- Be respectful and constructive
+- Provide context and examples
+- Help others when possible
+- Follow the Code of Conduct
 
 ## Recognition
 
-Contributors are acknowledged in releases and README.
+Contributors will be recognized in:
+
+- The project README
+- Release notes for significant contributions
+- Special thanks in documentation
+
+## Development Tips
+
+### Debugging
+
+- Use browser DevTools for frontend debugging
+- Check console for errors and warnings
+- Use React DevTools for component debugging
+
+### Performance
+
+- Monitor bundle size impacts
+- Test on different devices and browsers
+- Use React DevTools Profiler for performance analysis
+
+### Security
+
+- Never commit API keys or sensitive data
+- Follow security best practices
+- Report security issues privately
+
+## Questions?
+
+Don't hesitate to ask questions! You can:
+
+- Open a [Discussion](https://github.com/SashankBhamidi/SynAI/discussions)
+- Comment on an existing issue
+- Reach out to maintainers
+
+Thank you for contributing to SynAI! 🚀

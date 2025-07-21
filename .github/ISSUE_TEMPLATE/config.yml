@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security Vulnerability
+    url: mailto:hello@sashank.wiki?subject=SynAI Security
+    about: Report security vulnerabilities privately via email
+  - name: Community Discussions
+    url: https://github.com/SashankBhamidi/SynAI/discussions
+    about: Ask questions and discuss ideas with the community
