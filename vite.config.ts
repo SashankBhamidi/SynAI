@@ -1,30 +1,30 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
-import path from "path";
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react-swc'
+import path from 'path'
 
-// https://vitejs.dev/config/
-export default defineConfig(() => ({
-  server: {
-    host: "::",
-    port: 8080,
-  },
-  plugins: [
-    react(),
-  ],
+export default defineConfig({
+  plugins: [react()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
+      '@': path.resolve(__dirname, './src')
+    }
+  },
+  server: {
+    port: 3000,
+    open: true
   },
   build: {
-    target: 'esnext', // Support top-level await and modern features
+    outDir: 'dist',
+    sourcemap: true,
+    target: 'esnext',
     rollupOptions: {
+      input: 'public/index.html',
       output: {
-        format: 'es' as const
+        format: 'es'
       }
     }
   },
   esbuild: {
-    target: 'esnext' // Support top-level await in esbuild
+    target: 'esnext'
   }
-}));
+})
