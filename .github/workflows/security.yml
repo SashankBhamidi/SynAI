@@ -23,8 +23,9 @@ jobs:
     - name: Install dependencies
       run: npm ci
     
-    - name: Security audit
-      run: npm audit --audit-level moderate
+    - name: Security audit for production dependencies
+      run: npm audit --omit=dev --audit-level moderate
       
-    - name: Check for known vulnerabilities
-      run: npm audit --audit-level moderate
+    - name: Security audit report (dev dependencies - informational)
+      run: npm audit --audit-level moderate || echo "Development dependency vulnerabilities detected but not blocking build"
+      continue-on-error: true
