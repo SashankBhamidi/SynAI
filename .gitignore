@@ -55,3 +55,4 @@ Claude.md
 # Temporary files
 *.tmp
 *.temp
+.html/
