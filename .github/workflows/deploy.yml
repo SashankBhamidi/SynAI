@@ -1,72 +1,108 @@
-name: Deploy
+name: Deploy to Production
 
-# 🔒 DEPLOYMENT SAFETY: This workflow ONLY runs on master branch pushes
-# Pull Requests will NEVER trigger deployment
+# 🔒 DEPLOYMENT SAFETY: 
+# - Only runs on master branch pushes (never on PRs)
+# - Requires all tests to pass
+# - Requires manual approval via GitHub environment protection
 on:
   push:
-    branches: [master]  # Only master branch pushes trigger deployment
+    branches: [master]
+    paths-ignore:
+      - '**.md'
+      - '.github/**'
+      - 'docs/**'
 
 jobs:
-  deploy:
+  # First run all quality checks
+  quality-gate:
+    name: Quality Gate
     runs-on: ubuntu-latest
-    
-    # Additional safety: Only run if not a draft or if specific conditions are met
-    # AND only if Vercel token is available (secrets configured)
-    if: github.ref == 'refs/heads/master' && !github.event.repository.draft && secrets.VERCEL_TOKEN != ''
-    
-    environment:
-      name: production
-      url: https://your-domain.com  # Update with your actual domain
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3.6.0
+        uses: actions/checkout@v4
       
       - name: Setup Node.js
-        uses: actions/setup-node@v3.8.1
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
+          node-version: '20'
+          cache: 'npm'
       
       - name: Install dependencies
         run: npm ci
       
-      - name: Run tests before deployment
-        run: |
-          npm run typecheck
-          npm run lint:check
-          npm run test
+      - name: Type checking
+        run: npm run typecheck
+      
+      - name: Lint code
+        run: npm run lint:check
+      
+      - name: Run test suite
+        run: npm run test:coverage
+      
+      - name: Build verification
+        run: npm run build
+        env:
+          NODE_ENV: production
+      
+      - name: Archive coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: ./coverage/
+
+  # Deploy only after quality gate passes
+  deploy:
+    name: Deploy to Vercel
+    runs-on: ubuntu-latest
+    needs: quality-gate
+    
+    # Require manual approval for production deployments
+    environment:
+      name: production
+      url: https://synai.site
+    
+    # Additional safety checks
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
       
       - name: Build for production
         run: npm run build
         env:
           NODE_ENV: production
       
-      - name: Install Vercel CLI
-        run: npm install --global vercel@latest
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          working-directory: ./
       
-      - name: Pull Vercel Environment Information
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-      
-      - name: Build Project Artifacts
-        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
-      
-      - name: Deploy Project Artifacts to Vercel
-        run: |
-          url=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
-          echo "🚀 Deployed to: $url"
-          echo "deployment-url=$url" >> $GITHUB_OUTPUT
-        id: deploy
-      
-      - name: Create deployment status
-        uses: actions/github-script@v6
+      - name: Comment deployment URL
+        uses: actions/github-script@v7
         with:
           script: |
-            github.rest.repos.createDeploymentStatus({
+            const deploymentUrl = 'https://synai.site';
+            
+            github.rest.repos.createCommitComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              deployment_id: context.payload.deployment?.id || 0,
-              state: 'success',
-              environment_url: '${{ steps.deploy.outputs.deployment-url }}',
-              description: 'Deployment successful'
-            })
+              commit_sha: context.sha,
+              body: `🚀 Successfully deployed to [${deploymentUrl}](${deploymentUrl})`
+            });
+            
+            core.info(`Deployed to: ${deploymentUrl}`);
