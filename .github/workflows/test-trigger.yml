@@ -1,0 +1,15 @@
+name: Test Trigger
+
+on:
+  push:
+    branches: [ license-update-cc-by-nc-sa ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    name: Simple Test
+    runs-on: ubuntu-latest
+    steps:
+    - name: Simple echo
+      run: echo "GitHub Actions is working! 🎉"
