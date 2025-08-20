@@ -10,15 +10,12 @@ export default defineConfig({
     }
   },
   server: {
-    port: 3000,
-    open: true
+    host: "::",
+    port: 8080,
   },
   build: {
-    outDir: 'dist',
-    sourcemap: true,
     target: 'esnext',
     rollupOptions: {
-      input: 'public/index.html',
       output: {
         format: 'es'
       }
